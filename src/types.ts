@@ -31,6 +31,10 @@ export interface LintInitConfig {
    * EditorConfig settings
    */
   editorconfig?: string;
+  /**
+   * VS Code settings and extensions
+   */
+  vscode?: VSCodeInitPreset;
 }
 
 export interface ESLintInitPreset {
@@ -143,4 +147,15 @@ export interface MarkdownlintInitPreset {
    * .markdownlintignore
    */
   ignore?: string;
+}
+
+export interface VSCodeInitPreset {
+  /**
+   * Content of `.vscode/settings.json` file.
+   */
+  settings: any;
+  /**
+   * Content of `.vscode/extensions.json` file.
+   */
+  extensions: any;
 }

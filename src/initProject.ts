@@ -1,5 +1,5 @@
 import glob from 'fast-glob';
-import { readFile, writeFile } from 'fs/promises';
+import { mkdir, readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import sortPackageJson from 'sort-package-json';
 import {
@@ -7,6 +7,7 @@ import {
   MarkdownlintInitPreset,
   PrettierInitPreset,
   StylelintInitPreset,
+  VSCodeInitPreset,
 } from './types';
 
 export interface InitProjectOptions {
@@ -15,6 +16,7 @@ export interface InitProjectOptions {
   markdownlint?: MarkdownlintInitPreset | null | undefined;
   prettier?: PrettierInitPreset | null | undefined;
   editorconfig?: string | null | undefined;
+  vscode?: VSCodeInitPreset | null | undefined;
 }
 
 export async function initProject(projectPath: string, options: InitProjectOptions) {
@@ -148,5 +150,23 @@ export async function initProject(projectPath: string, options: InitProjectOptio
 
   if (options.editorconfig) {
     await writeFile(join(projectPath, '.editorconfig'), options.editorconfig, 'utf8');
+  }
+
+  if (options.vscode) {
+    await mkdir(join(projectPath, '.vscode'), { recursive: true });
+    if (options.vscode.settings) {
+      await writeFile(
+        join(projectPath, '.vscode', 'settings.json'),
+        JSON.stringify(options.vscode.settings, null, 2),
+        'utf8',
+      );
+    }
+    if (options.vscode.extensions) {
+      await writeFile(
+        join(projectPath, '.vscode', 'extensions.json'),
+        JSON.stringify(options.vscode.extensions, null, 2),
+        'utf8',
+      );
+    }
   }
 }

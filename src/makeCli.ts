@@ -128,18 +128,18 @@ export async function makeCli(config: LintInitConfig) {
       stylelintPreset = config.stylelint.find((item) => item.id === result);
     }
 
-    const ci = await select({
-      message: '🚥 ' + messages.ci,
-      options: [
-        { value: 'github-action', label: 'GitHub Action' },
-        { value: 'gitlab-ci', label: 'GitLab CI' },
-      ],
-    });
+    // const ci = await select({
+    //   message: '🚥 ' + messages.ci,
+    //   options: [
+    //     { value: 'github-action', label: 'GitHub Action' },
+    //     { value: 'gitlab-ci', label: 'GitLab CI' },
+    //   ],
+    // });
 
-    if (isCancel(ci)) {
-      cancel('👋 ' + messages.cancel);
-      process.exit(0);
-    }
+    // if (isCancel(ci)) {
+    //   cancel('👋 ' + messages.cancel);
+    //   process.exit(0);
+    // }
 
     const s = spinner();
     s.start('🚧 ' + messages.initializing);
