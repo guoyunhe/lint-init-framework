@@ -1,0 +1,56 @@
+{
+  "name": "package-name",
+  "version": "1.0.0",
+  "description": "...",
+  "keywords": [
+    "node"
+  ],
+  "homepage": "https://github.com/guoyunhe/lint-init-framework#readme",
+  "bugs": {
+    "url": "https://github.com/guoyunhe/lint-init-framework/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/guoyunhe/lint-init-framework.git"
+  },
+  "funding": "https://github.com/sponsors/guoyunhe",
+  "license": "UNLICENSED",
+  "author": {
+    "name": "Guo Yunhe",
+    "email": "i@guoyunhe.me"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node-scripts build",
+    "format": "node-scripts format",
+    "lint": "node-scripts lint",
+    "test": "node-scripts test",
+    "watch": "node-scripts watch"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true
+  },
+  "eslintConfig": {
+    "extends": "@guoyunhe/node-scripts"
+  },
+  "jest": {
+    "preset": "@guoyunhe/node-scripts"
+  },
+  "devDependencies": {
+    "@guoyunhe/node-scripts": "^2.2.0",
+    "@tsconfig/node20": "^1.0.1",
+    "@tsconfig/strictest": "^2.0.1",
+    "@types/jest": "^29.5.2",
+    "@types/node": "^20.3.1",
+    "typescript": "^5.1.3"
+  }
+}
