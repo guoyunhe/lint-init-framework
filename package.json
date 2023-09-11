@@ -1,7 +1,7 @@
 {
-  "name": "package-name",
+  "name": "lint-init-framework",
   "version": "1.0.0",
-  "description": "...",
+  "description": "Framework to make your own lint-init CLI tool",
   "keywords": [
     "node"
   ],
@@ -14,13 +14,13 @@
     "url": "git+https://github.com/guoyunhe/lint-init-framework.git"
   },
   "funding": "https://github.com/sponsors/guoyunhe",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "author": {
     "name": "Guo Yunhe",
     "email": "i@guoyunhe.me"
   },
+  "type": "module",
   "main": "dist/index.js",
-  "module": "dist/index.mjs",
   "typings": "dist/index.d.ts",
   "files": [
     "dist",
