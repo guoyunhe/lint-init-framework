@@ -147,9 +147,10 @@ export async function makeCli(config: LintInitConfig) {
       await initProject(projectPath, {
         eslint: eslintPreset,
         stylelint: stylelintPreset,
-        prettier: linters.includes('prettier') ? config.prettier : null,
         markdownlint: linters.includes('markdownlint') ? config.markdownlint : null,
+        prettier: linters.includes('prettier') ? config.prettier : null,
         editorconfig: config.editorconfig,
+        vscode: config.vscode,
       });
       s.stop('🚧 ' + messages.initialized);
     } catch (e) {
