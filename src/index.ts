@@ -1,3 +1,2 @@
-export function hello(who = 'world'): string {
-  return `Hello, ${who}!`;
-}
+export * from './makeCli';
+export * from './types';
