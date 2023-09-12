@@ -3,6 +3,7 @@
 ## 1.1.0 - 2023-09-12
 
 - Added `scripts` in package.json
+- Added traditional command line support
 
 ## 1.0.0 - 2023-09-11
 
