@@ -21,6 +21,15 @@ export interface InitProjectOptions {
 
 export async function initProject(projectPath: string, options: InitProjectOptions) {
   let packageJson: any = {};
+  const vscodeSettings: any = {
+    ...options.vscode?.settings,
+    'editor.codeActionsOnSave': {},
+  };
+  const vscodeExtensions: any = {
+    recommendations: [],
+  };
+  const lintScripts: string[] = [];
+  const lintFixScripts: string[] = [];
 
   try {
     const packageJsonRaw = await readFile(join(projectPath, 'package.json'), 'utf8');
@@ -39,6 +48,19 @@ export async function initProject(projectPath: string, options: InitProjectOptio
       eslint: '^8.0.0',
       ...options.eslint.deps,
     };
+
+    lintScripts.push('eslint .');
+    lintFixScripts.push('eslint --fix .');
+
+    vscodeSettings['eslint.validate'] = [
+      'javascript',
+      'javascriptreact',
+      'typescript',
+      'typescriptreact',
+    ];
+    vscodeSettings['editor.codeActionsOnSave']['source.fixAll.eslint'] = true;
+    vscodeSettings['editor.codeActionsOnSave']['organizeImports'] = true;
+    vscodeExtensions.recommendations.push('dbaeumer.vscode-eslint');
 
     const config = options.eslint.config || {};
 
@@ -74,6 +96,13 @@ export async function initProject(projectPath: string, options: InitProjectOptio
       ...options.stylelint.deps,
     };
 
+    vscodeSettings['stylelint.validate'] = ['css', 'less', 'postcss', 'scss'];
+    vscodeSettings['editor.codeActionsOnSave']['source.fixAll.stylelint'] = true;
+    vscodeExtensions.recommendations.push('stylelint.vscode-stylelint');
+
+    lintScripts.push('stylelint "**/*.{css,less,scss}"');
+    lintFixScripts.push('stylelint --fix "**/*.{css,less,scss}"');
+
     if (options.stylelint.config) {
       await writeFile(
         join(projectPath, '.stylelintrc.json'),
@@ -98,6 +127,11 @@ export async function initProject(projectPath: string, options: InitProjectOptio
       ['markdownlint-cli']: '0.x',
       ...options.markdownlint.deps,
     };
+
+    lintScripts.push('markdownlint **/*.md');
+    lintFixScripts.push('markdownlint --fix **/*.md');
+
+    vscodeExtensions.recommendations.push('DavidAnson.vscode-markdownlint');
 
     if (options.markdownlint.config) {
       await writeFile(
@@ -126,6 +160,11 @@ export async function initProject(projectPath: string, options: InitProjectOptio
       ...options.prettier.deps,
     };
 
+    lintFixScripts.push('prettier --write .');
+
+    vscodeSettings['editor.defaultFormatter'] = 'esbenp.prettier-vscode';
+    vscodeExtensions.recommendations.push('esbenp.prettier-vscode');
+
     if (options.prettier.config) {
       await writeFile(
         join(projectPath, '.prettierrc.json'),
@@ -144,29 +183,33 @@ export async function initProject(projectPath: string, options: InitProjectOptio
     delete packageJson.prettier;
   }
 
+  if (options.editorconfig) {
+    vscodeExtensions.recommendations.push('editorconfig.editorconfig');
+    await writeFile(join(projectPath, '.editorconfig'), options.editorconfig, 'utf8');
+  }
+
+  if (!packageJson.scripts) {
+    packageJson.scripts = {};
+  }
+
+  packageJson.scripts.lint = lintScripts.join(' && ');
+  packageJson.scripts['lint:fix'] = lintFixScripts.join(' && ');
+
   packageJson = sortPackageJson(packageJson);
 
   await writeFile(join(projectPath, 'package.json'), JSON.stringify(packageJson, null, 2), 'utf8');
 
-  if (options.editorconfig) {
-    await writeFile(join(projectPath, '.editorconfig'), options.editorconfig, 'utf8');
-  }
+  await mkdir(join(projectPath, '.vscode'), { recursive: true });
 
-  if (options.vscode) {
-    await mkdir(join(projectPath, '.vscode'), { recursive: true });
-    if (options.vscode.settings) {
-      await writeFile(
-        join(projectPath, '.vscode', 'settings.json'),
-        JSON.stringify(options.vscode.settings, null, 2),
-        'utf8',
-      );
-    }
-    if (options.vscode.extensions) {
-      await writeFile(
-        join(projectPath, '.vscode', 'extensions.json'),
-        JSON.stringify(options.vscode.extensions, null, 2),
-        'utf8',
-      );
-    }
-  }
+  await writeFile(
+    join(projectPath, '.vscode', 'settings.json'),
+    JSON.stringify(vscodeSettings, null, 2),
+    'utf8',
+  );
+
+  await writeFile(
+    join(projectPath, '.vscode', 'extensions.json'),
+    JSON.stringify(vscodeExtensions, null, 2),
+    'utf8',
+  );
 }
