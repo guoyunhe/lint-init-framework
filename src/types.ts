@@ -14,11 +14,11 @@ export interface LintInitConfig {
   /**
    * Enable ESLint support
    */
-  eslint?: Partial<ESLintInitPreset> | ESLintInitPreset[];
+  eslint?: ESLintInitPreset | ESLintInitPreset[];
   /**
    * Enable Stylelint support
    */
-  stylelint?: Partial<StylelintInitPreset> | StylelintInitPreset[];
+  stylelint?: StylelintInitPreset | StylelintInitPreset[];
   /**
    * Enable Markdownlint support
    */

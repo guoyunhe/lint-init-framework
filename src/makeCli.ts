@@ -1,6 +1,7 @@
 import { cancel, intro, isCancel, multiselect, outro, select, spinner, text } from '@clack/prompts';
 import chalk from 'chalk';
 import { Command } from 'commander';
+import { join } from 'path';
 import enMessages from './i18n/en.json';
 import zhMessages from './i18n/zh.json';
 import { initProject } from './initProject';
@@ -51,7 +52,27 @@ export async function makeCli(config: LintInitConfig) {
       command.option('--prettier', messages.cmd_prettier);
     }
 
-    command.option('--no-install', messages.cmd_no_install);
+    command.action(async (project: string, options: any) => {
+      const projectPath = project ? join(process.cwd(), project) : process.cwd();
+      const eslintPreset = options.eslint
+        ? Array.isArray(config.eslint)
+          ? config.eslint.find((item) => item.id === options.eslint)
+          : config.eslint
+        : null;
+      const stylelintPreset = options.stylelint
+        ? Array.isArray(config.stylelint)
+          ? config.stylelint.find((item) => item.id === options.stylelint)
+          : config.stylelint
+        : null;
+      await initProject(projectPath, {
+        eslint: eslintPreset,
+        stylelint: stylelintPreset,
+        markdownlint: options.markdownlint ? config.markdownlint : null,
+        prettier: options.prettier ? config.prettier : null,
+        editorconfig: config.editorconfig,
+        vscode: config.vscode,
+      });
+    });
   } else {
     // Interactive prompts
     console.log('');
@@ -127,19 +148,6 @@ export async function makeCli(config: LintInitConfig) {
 
       stylelintPreset = config.stylelint.find((item) => item.id === result);
     }
-
-    // const ci = await select({
-    //   message: '🚥 ' + messages.ci,
-    //   options: [
-    //     { value: 'github-action', label: 'GitHub Action' },
-    //     { value: 'gitlab-ci', label: 'GitLab CI' },
-    //   ],
-    // });
-
-    // if (isCancel(ci)) {
-    //   cancel('👋 ' + messages.cancel);
-    //   process.exit(0);
-    // }
 
     const s = spinner();
     s.start('🚧 ' + messages.initializing);
