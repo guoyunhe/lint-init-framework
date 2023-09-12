@@ -22,11 +22,12 @@ export interface InitProjectOptions {
 export async function initProject(projectPath: string, options: InitProjectOptions) {
   let packageJson: any = {};
   const vscodeSettings: any = {
-    ...options.vscode?.settings,
     'editor.codeActionsOnSave': {},
+    ...options.vscode?.settings,
   };
   const vscodeExtensions: any = {
     recommendations: [],
+    ...options.vscode?.extensions,
   };
   const lintScripts: string[] = [];
   const lintFixScripts: string[] = [];

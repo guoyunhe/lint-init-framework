@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0 - 2023-09-12
+
+- Added `scripts` in package.json
+
 ## 1.0.0 - 2023-09-11
 
 - Added `makeCli()` function to create your own lint-init CLI
