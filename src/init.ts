@@ -2,24 +2,9 @@ import glob from 'fast-glob';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import sortPackageJson from 'sort-package-json';
-import {
-  ESLintInitPreset,
-  MarkdownlintInitPreset,
-  PrettierInitPreset,
-  StylelintInitPreset,
-  VSCodeInitPreset,
-} from './types';
+import { InitOptions } from './types';
 
-export interface InitProjectOptions {
-  eslint?: ESLintInitPreset | null | undefined;
-  stylelint?: StylelintInitPreset | null | undefined;
-  markdownlint?: MarkdownlintInitPreset | null | undefined;
-  prettier?: PrettierInitPreset | null | undefined;
-  editorconfig?: string | null | undefined;
-  vscode?: VSCodeInitPreset | null | undefined;
-}
-
-export async function initProject(projectPath: string, options: InitProjectOptions) {
+export async function init(projectPath: string, options: InitOptions) {
   let packageJson: any = {};
   const vscodeSettings: any = {
     'editor.codeActionsOnSave': {},

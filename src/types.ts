@@ -1,4 +1,4 @@
-export interface LintInitConfig {
+export interface LintInitConfig extends InitOptions {
   /**
    * Package name of the lint-init tool, e.g. @org-name/lint-init, awesome-lint-init
    */
@@ -12,40 +12,50 @@ export interface LintInitConfig {
    */
   version: string;
   /**
-   * Enable ESLint support
+   * Presets for different type of projects
    */
-  eslint?: ESLintInitPreset | ESLintInitPreset[];
-  /**
-   * Enable Stylelint support
-   */
-  stylelint?: StylelintInitPreset | StylelintInitPreset[];
-  /**
-   * Enable Markdownlint support
-   */
-  markdownlint?: MarkdownlintInitPreset;
-  /**
-   * Enable Prettier support
-   */
-  prettier?: PrettierInitPreset;
-  /**
-   * EditorConfig settings
-   */
-  editorconfig?: string;
-  /**
-   * VS Code settings and extensions
-   */
-  vscode?: VSCodeInitPreset;
+  presets?: InitPreset[];
 }
 
-export interface ESLintInitPreset {
+export interface InitPreset extends InitOptions {
   /**
    * Display name of the preset, e.g. ESLint + React, ESLint + React + TypeScript
    */
   name: string;
   /**
-   * Identifier of the preset, used for command line option, e.g. --eslint react-typescript
+   * Identifier of the preset, used for command line option, e.g. --preset react-typescript
    */
   id: string;
+}
+
+export interface InitOptions {
+  /**
+   * Enable ESLint support
+   */
+  eslint?: InitESLintOptions | null | undefined;
+  /**
+   * Enable Stylelint support
+   */
+  stylelint?: InitStylelintOptions | null | undefined;
+  /**
+   * Enable Markdownlint support
+   */
+  markdownlint?: InitMarkdownlintOptions | null | undefined;
+  /**
+   * Enable Prettier support
+   */
+  prettier?: InitPrettierOptions | null | undefined;
+  /**
+   * EditorConfig settings
+   */
+  editorconfig?: string | null | undefined;
+  /**
+   * VS Code settings and extensions
+   */
+  vscode?: InitVSCodeOptions | null | undefined;
+}
+
+export interface InitESLintOptions {
   /**
    * devDependencies
    */
@@ -70,15 +80,7 @@ export interface ESLintInitPreset {
   ignore?: string;
 }
 
-export interface StylelintInitPreset {
-  /**
-   * Display name of the preset, e.g. Stylelint + CSS, Stylelint + LESS
-   */
-  name: string;
-  /**
-   * Identifier of the preset, used for command line option, e.g. --stylelint scss
-   */
-  id: string;
+export interface InitStylelintOptions {
   /**
    * devDependencies
    */
@@ -99,33 +101,13 @@ export interface StylelintInitPreset {
    * @see https://stylelint.io/user-guide/configure#ignorefiles
    */
   ignore?: string;
+  /**
+   * Make Stylelint optional, can be enabled by --stylelint or yes/no prompts
+   */
+  optional?: boolean;
 }
 
-export interface PrettierInitPreset {
-  /**
-   * devDependencies of the preset
-   */
-  deps?: Record<string, string>;
-  /**
-   * Prettier configuration object or package name of shareable configuration. If not specified,
-   * Prettier will read `.editorconfig` settings or use built-in defaults.
-   * @see https://prettier.io/docs/en/options
-   */
-  config?: any;
-  /**
-   * Prettier configuration file name. If array is given, users can choose one from the list and the
-   * first will be the default.
-   *
-   * @default 'package.json'
-   */
-  configFile?: string | string[];
-  /**
-   * .prettierignore
-   */
-  ignore?: string;
-}
-
-export interface MarkdownlintInitPreset {
+export interface InitMarkdownlintOptions {
   /**
    * devDependencies of the preset
    */
@@ -147,9 +129,41 @@ export interface MarkdownlintInitPreset {
    * .markdownlintignore
    */
   ignore?: string;
+  /**
+   * Make Markdownlint optional, can be enabled by --markdownlint or yes/no prompts
+   */
+  optional?: boolean;
 }
 
-export interface VSCodeInitPreset {
+export interface InitPrettierOptions {
+  /**
+   * devDependencies of the preset
+   */
+  deps?: Record<string, string>;
+  /**
+   * Prettier configuration object or package name of shareable configuration. If not specified,
+   * Prettier will read `.editorconfig` settings or use built-in defaults.
+   * @see https://prettier.io/docs/en/options
+   */
+  config?: any;
+  /**
+   * Prettier configuration file name. If array is given, users can choose one from the list and the
+   * first will be the default.
+   *
+   * @default 'package.json'
+   */
+  configFile?: string | string[];
+  /**
+   * .prettierignore
+   */
+  ignore?: string;
+  /**
+   * Make Prettier optional, can be enabled by --prettier or yes/no prompts
+   */
+  optional?: boolean;
+}
+
+export interface InitVSCodeOptions {
   /**
    * Content of `.vscode/settings.json` file.
    */

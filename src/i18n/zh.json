@@ -15,7 +15,7 @@
   "skip": "跳过",
   "thank": "大功告成！如果您喜欢本工具，请在 GitHub 上给它一颗小星星 ⭐",
   "cmd_eslint": "启用 ESLint 支持",
-  "cmd_eslint_presets": "启用 ESLint 支持并选择预设配置。可选预设：{presets}",
+  "cmd_presets": "启用 ESLint 支持并选择预设配置。可选预设：{presets}",
   "cmd_stylelint": "启用 Stylelint 支持",
   "cmd_stylelint_presets": "启用 Stylelint 支持并选择预设配置。可选预设：{presets}",
   "cmd_markdownlint": "启用 Markdownlint 支持",

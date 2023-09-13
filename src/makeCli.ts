@@ -4,9 +4,9 @@ import { Command } from 'commander';
 import { join } from 'path';
 import enMessages from './i18n/en.json';
 import zhMessages from './i18n/zh.json';
-import { initProject } from './initProject';
+import { init } from './init';
 import { runCommand } from './runCommand';
-import { ESLintInitPreset, LintInitConfig, StylelintInitPreset } from './types';
+import { InitESLintOptions, InitStylelintOptions, LintInitConfig } from './types';
 
 export async function makeCli(config: LintInitConfig) {
   // Load i18n messages
@@ -16,32 +16,24 @@ export async function makeCli(config: LintInitConfig) {
     // Traditional command line
     const command = new Command(config.commandName);
 
-    if (config.eslint) {
+    if (config.presets) {
       if (Array.isArray(config.eslint)) {
         command.option(
-          '--eslint <preset>',
-          messages.cmd_eslint_presets.replace(
+          '--preset <preset>',
+          messages.cmd_presets.replace(
             '{presets}',
             config.eslint.map((item) => item.id).join(', '),
           ),
         );
-      } else {
-        command.option('--eslint', messages.cmd_eslint);
       }
     }
 
     if (config.stylelint) {
-      if (Array.isArray(config.stylelint)) {
-        command.option(
-          '--stylelint <preset>',
-          messages.cmd_stylelint_presets.replace(
-            '{presets}',
-            config.stylelint.map((item) => item.id).join(', '),
-          ),
-        );
-      } else {
-        command.option('--stylelint', messages.cmd_stylelint);
-      }
+      command.option('--eslint', messages.cmd_stylelint);
+    }
+
+    if (config.stylelint) {
+      command.option('--stylelint', messages.cmd_stylelint);
     }
 
     if (config.markdownlint) {
@@ -64,7 +56,7 @@ export async function makeCli(config: LintInitConfig) {
           ? config.stylelint.find((item) => item.id === options.stylelint)
           : config.stylelint
         : null;
-      await initProject(projectPath, {
+      await init(projectPath, {
         eslint: eslintPreset,
         stylelint: stylelintPreset,
         markdownlint: options.markdownlint ? config.markdownlint : null,
@@ -117,7 +109,7 @@ export async function makeCli(config: LintInitConfig) {
       process.exit(0);
     }
 
-    let eslintPreset: ESLintInitPreset | undefined;
+    let eslintPreset: InitESLintOptions | undefined;
 
     if (linters.includes('eslint') && Array.isArray(config.eslint)) {
       const result = await select<any, string>({
@@ -133,7 +125,7 @@ export async function makeCli(config: LintInitConfig) {
       eslintPreset = config.eslint.find((item) => item.id === result);
     }
 
-    let stylelintPreset: StylelintInitPreset | undefined;
+    let stylelintPreset: InitStylelintOptions | undefined;
 
     if (linters.includes('stylelint') && Array.isArray(config.stylelint)) {
       const result = await select<any, string>({
@@ -152,7 +144,7 @@ export async function makeCli(config: LintInitConfig) {
     const s = spinner();
     s.start('🚧 ' + messages.initializing);
     try {
-      await initProject(projectPath, {
+      await init(projectPath, {
         eslint: eslintPreset,
         stylelint: stylelintPreset,
         markdownlint: linters.includes('markdownlint') ? config.markdownlint : null,
