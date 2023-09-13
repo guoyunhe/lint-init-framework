@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0 - 2023-09-13
+
+- Added global `preset` support
+
 ## 1.1.0 - 2023-09-12
 
 - Added `scripts` in package.json
