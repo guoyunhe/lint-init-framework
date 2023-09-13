@@ -1,4 +1,4 @@
-import { cancel, intro, isCancel, multiselect, outro, select, spinner, text } from '@clack/prompts';
+import { cancel, confirm, intro, isCancel, outro, select, spinner, text } from '@clack/prompts';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { join } from 'path';
@@ -6,7 +6,7 @@ import enMessages from './i18n/en.json';
 import zhMessages from './i18n/zh.json';
 import { init } from './init';
 import { runCommand } from './runCommand';
-import { InitESLintOptions, InitStylelintOptions, LintInitConfig } from './types';
+import { InitPreset, LintInitConfig } from './types';
 
 export async function makeCli(config: LintInitConfig) {
   // Load i18n messages
@@ -17,52 +17,53 @@ export async function makeCli(config: LintInitConfig) {
     const command = new Command(config.commandName);
 
     if (config.presets) {
-      if (Array.isArray(config.eslint)) {
-        command.option(
-          '--preset <preset>',
-          messages.cmd_presets.replace(
-            '{presets}',
-            config.eslint.map((item) => item.id).join(', '),
-          ),
-        );
-      }
+      command.option(
+        '--preset <preset>',
+        messages.cmd_presets.replace('{presets}', config.presets.map((item) => item.id).join(', ')),
+      );
     }
 
-    if (config.stylelint) {
-      command.option('--eslint', messages.cmd_stylelint);
-    }
-
-    if (config.stylelint) {
+    if (config.stylelint?.optional || config.presets?.some((p) => p.stylelint?.optional)) {
       command.option('--stylelint', messages.cmd_stylelint);
     }
 
-    if (config.markdownlint) {
+    if (config.markdownlint?.optional || config.presets?.some((p) => p.markdownlint?.optional)) {
       command.option('--markdownlint', messages.cmd_markdownlint);
     }
 
-    if (config.prettier) {
+    if (config.prettier?.optional || config.presets?.some((p) => p.prettier?.optional)) {
       command.option('--prettier', messages.cmd_prettier);
     }
 
     command.action(async (project: string, options: any) => {
       const projectPath = project ? join(process.cwd(), project) : process.cwd();
-      const eslintPreset = options.eslint
-        ? Array.isArray(config.eslint)
-          ? config.eslint.find((item) => item.id === options.eslint)
-          : config.eslint
-        : null;
-      const stylelintPreset = options.stylelint
-        ? Array.isArray(config.stylelint)
-          ? config.stylelint.find((item) => item.id === options.stylelint)
-          : config.stylelint
-        : null;
+      const preset =
+        config.presets && options.preset
+          ? config.presets.find((p) => p.id === options.preset)
+          : null;
+
+      let stylelint = preset?.stylelint || config.stylelint;
+      if (stylelint?.optional && !options.stylelint) {
+        stylelint = null;
+      }
+
+      let markdownlint = preset?.markdownlint || config.markdownlint;
+      if (markdownlint?.optional && !options.markdownlint) {
+        markdownlint = null;
+      }
+
+      let prettier = preset?.prettier || config.prettier;
+      if (prettier?.optional && !options.prettier) {
+        prettier = null;
+      }
+
       await init(projectPath, {
-        eslint: eslintPreset,
-        stylelint: stylelintPreset,
-        markdownlint: options.markdownlint ? config.markdownlint : null,
-        prettier: options.prettier ? config.prettier : null,
-        editorconfig: config.editorconfig,
-        vscode: config.vscode,
+        eslint: preset?.eslint || config.eslint,
+        stylelint,
+        markdownlint,
+        prettier,
+        editorconfig: preset?.editorconfig || config.editorconfig,
+        vscode: preset?.vscode || config.vscode,
       });
     });
   } else {
@@ -74,122 +75,127 @@ export async function makeCli(config: LintInitConfig) {
     );
 
     const projectPath = await text({
-      message: '📁 ' + messages.project_path,
+      message: '📁 ' + messages.prompt_project,
       initialValue: process.cwd(),
     });
 
     if (isCancel(projectPath)) {
-      cancel('👋 ' + messages.cancel);
+      cancel('👋 ' + messages.prompt_cancel);
       process.exit(0);
     }
 
-    const linterOptions: { label: string; value: string; hint?: string }[] = [];
+    let preset: InitPreset | null = null;
 
-    if (config.eslint) {
-      linterOptions.push({ value: 'eslint', label: 'ESLint' });
-    }
-    if (config.stylelint) {
-      linterOptions.push({ value: 'stylelint', label: 'Stylelint' });
-    }
-    if (config.markdownlint) {
-      linterOptions.push({ value: 'markdownlint', label: 'Markdownlint' });
-    }
-    if (config.prettier) {
-      linterOptions.push({ value: 'prettier', label: 'Prettier' });
-    }
-
-    const linters = await multiselect<any, string>({
-      message: '🧰 ' + messages.linters,
-      options: linterOptions,
-      required: true,
-    });
-
-    if (isCancel(linters)) {
-      cancel('👋 ' + messages.cancel);
-      process.exit(0);
-    }
-
-    let eslintPreset: InitESLintOptions | undefined;
-
-    if (linters.includes('eslint') && Array.isArray(config.eslint)) {
+    if (config.presets) {
       const result = await select<any, string>({
-        message: '🔵 ' + messages.eslint_presets,
-        options: config.eslint.map((preset) => ({ label: preset.name, value: preset.id })),
+        message: '🧰 ' + messages.prompt_preset,
+        options: config.presets?.map((p) => ({ value: p.id, label: p.name })),
       });
 
       if (isCancel(result)) {
-        cancel('👋 ' + messages.cancel);
+        cancel('👋 ' + messages.prompt_cancel);
         process.exit(0);
       }
 
-      eslintPreset = config.eslint.find((item) => item.id === result);
+      preset = config.presets.find((p) => p.id === result) || null;
     }
 
-    let stylelintPreset: InitStylelintOptions | undefined;
+    const eslint = preset?.eslint || config.eslint || null;
 
-    if (linters.includes('stylelint') && Array.isArray(config.stylelint)) {
-      const result = await select<any, string>({
-        message: '🟣 ' + messages.stylelint_presets,
-        options: config.stylelint.map((preset) => ({ label: preset.name, value: preset.id })),
+    let stylelint = preset?.stylelint || config.stylelint || null;
+
+    if (stylelint?.optional) {
+      const result = await confirm({
+        message: '🟣 ' + messages.prompt_stylelint,
       });
 
       if (isCancel(result)) {
-        cancel('👋 ' + messages.cancel);
+        cancel('👋 ' + messages.prompt_cancel);
         process.exit(0);
       }
 
-      stylelintPreset = config.stylelint.find((item) => item.id === result);
+      stylelint = result ? stylelint : null;
+    }
+
+    let markdownlint = preset?.markdownlint || config.markdownlint || null;
+
+    if (markdownlint?.optional) {
+      const result = await confirm({
+        message: '🟣 ' + messages.prompt_markdownlint,
+      });
+
+      if (isCancel(result)) {
+        cancel('👋 ' + messages.prompt_cancel);
+        process.exit(0);
+      }
+
+      markdownlint = result ? markdownlint : null;
+    }
+
+    let prettier = preset?.prettier || config.prettier || null;
+
+    if (prettier?.optional) {
+      const result = await confirm({
+        message: '🟣 ' + messages.prompt_prettier,
+      });
+
+      if (isCancel(result)) {
+        cancel('👋 ' + messages.prompt_cancel);
+        process.exit(0);
+      }
+
+      prettier = result ? prettier : null;
     }
 
     const s = spinner();
-    s.start('🚧 ' + messages.initializing);
+    s.start('🚧 ' + messages.prompt_initializing);
     try {
       await init(projectPath, {
-        eslint: eslintPreset,
-        stylelint: stylelintPreset,
-        markdownlint: linters.includes('markdownlint') ? config.markdownlint : null,
-        prettier: linters.includes('prettier') ? config.prettier : null,
-        editorconfig: config.editorconfig,
-        vscode: config.vscode,
+        eslint,
+        stylelint,
+        markdownlint,
+        prettier,
+        editorconfig: preset?.editorconfig || config.editorconfig,
+        vscode: preset?.vscode || config.vscode,
       });
-      s.stop('🚧 ' + messages.initialized);
+      s.stop('🚧 ' + messages.prompt_initialized);
     } catch (e) {
-      s.stop('🚧 ' + messages.initialize_failed);
+      s.stop('🚧 ' + messages.prompt_initialize_failed);
       console.error(e);
       process.exit(1);
     }
 
     const installCommand = await select<any, string>({
-      message: '📦 ' + messages.install,
+      message: '📦 ' + messages.prompt_install,
       options: [
         { value: 'npm update', label: 'npm update' },
         { value: 'pnpm update', label: 'pnpm update' },
         { value: 'yarn update', label: 'yarn update' },
-        { value: null, label: messages.skip },
+        { value: null, label: messages.prompt_skip },
       ],
     });
 
     if (isCancel(installCommand)) {
-      cancel('👋 ' + messages.cancel);
+      cancel('👋 ' + messages.prompt_cancel);
       process.exit(0);
     }
 
     if (installCommand) {
       const s2 = spinner();
-      s2.start('📦 ' + messages.installing);
+      s2.start('📦 ' + messages.prompt_installing);
       const code = await runCommand(installCommand);
       if (code === null) {
-        s2.stop('👋 ' + messages.cancel);
+        s2.stop('👋 ' + messages.prompt_cancel);
       } else if (code === 0) {
-        s2.stop('📦 ' + messages.installed);
+        s2.stop('📦 ' + messages.prompt_installed);
       } else {
-        s2.stop('📦 ' + code + messages.installed);
+        s2.stop('📦 ' + code + messages.prompt_installed);
       }
     }
 
     outro(
       '🎉 ' +
-        messages.thank +
+        messages.prompt_thank +
         '\n      ' +
         chalk.underline('https://github.com/guoyunhe/lint-init'),
     );
