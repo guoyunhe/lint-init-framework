@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.0 - 2023-09-14
+
+- Fixed Prettier integration to ESLint and Stylelint
+
 ## 1.2.0 - 2023-09-13
 
 - Added global `preset` support
