@@ -59,11 +59,7 @@ export async function init(projectPath: string, options: InitOptions) {
       config.extends.push('plugin:prettier/recommended');
     }
 
-    await writeFile(
-      join(projectPath, '.eslintrc.json'),
-      JSON.stringify(options.eslint.config, null, 2),
-      'utf8',
-    );
+    await writeFile(join(projectPath, '.eslintrc.json'), JSON.stringify(config, null, 2), 'utf8');
 
     if (options.eslint.ignore) {
       await writeFile(join(projectPath, '.eslintignore'), options.eslint.ignore, 'utf8');
@@ -89,13 +85,21 @@ export async function init(projectPath: string, options: InitOptions) {
     lintScripts.push('stylelint "**/*.{css,less,scss}"');
     lintFixScripts.push('stylelint --fix "**/*.{css,less,scss}"');
 
-    if (options.stylelint.config) {
-      await writeFile(
-        join(projectPath, '.stylelintrc.json'),
-        JSON.stringify(options.stylelint.config, null, 2),
-        'utf8',
-      );
+    const config = options.stylelint.config || {};
+
+    if (options.prettier) {
+      packageJson.devDependencies['stylelint-prettier'] = '^4.0.2';
+      if (!config.extends) {
+        config.extends = [];
+      }
+      config.extends.push('stylelint-prettier/recommended');
     }
+
+    await writeFile(
+      join(projectPath, '.stylelintrc.json'),
+      JSON.stringify(options.stylelint.config, null, 2),
+      'utf8',
+    );
 
     if (options.stylelint.ignore) {
       await writeFile(join(projectPath, '.stylelintignore'), options.stylelint.ignore, 'utf8');
